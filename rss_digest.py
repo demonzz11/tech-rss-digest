@@ -1,4 +1,4 @@
-"""RSS -> DeepSeek -> PushPlus，JSON 文件存档，无服务器、无数据库。"""
+"""RSS -> AI 摘要 -> PushPlus，JSON 文件存档，无服务器、无数据库。"""
 
 from __future__ import annotations
 
@@ -272,24 +272,46 @@ def summarize(articles: list[dict], kind: str, start: datetime, end: datetime,
         "每项含 id（必须来自输入）、summary（60 至 150 字）、category（简短分类）。"
         f"highlights 最多 {maximum} 项，不要输出 Markdown 或 HTML。"
     )
-    result = api_json("https://api.deepseek.com/chat/completions", {
-        "model": config["deepseek_model"],
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content":
-            json.dumps({"report_type": kind, "start": start.isoformat(), "end": end.isoformat(),
-                        "articles": articles}, ensure_ascii=False)}],
-        "response_format": {"type": "json_object"}, "temperature": 0.3, "max_tokens": 6000,
-    }, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, retry=True)
+    user = json.dumps({"report_type": kind, "start": start.isoformat(), "end": end.isoformat(),
+                       "articles": articles}, ensure_ascii=False)
+    api_format = config["ai_api_format"]
+    if api_format == "responses":
+        endpoint = "/responses"
+        payload = {"model": config["ai_model"], "instructions": system,
+                   "input": [{"role": "user", "content": [{"type": "input_text", "text": user}]}],
+                   "store": False, "stream": False, "max_output_tokens": 10000}
+    else:
+        endpoint = "/chat/completions"
+        payload = {"model": config["ai_model"],
+                   "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                   "response_format": {"type": "json_object"}, "temperature": 0.3, "max_tokens": 6000}
+    LOG.info("AI 摘要：模型 %s，接口 %s", config["ai_model"], api_format)
+    result = api_json(config["ai_base_url"].rstrip("/") + endpoint, payload,
+                      headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                      timeout=180, retry=True)
     try:
-        choice = result["choices"][0]
-        if choice.get("finish_reason") == "length":
-            raise DigestError("DeepSeek 输出超过长度限制，请减少 max_highlights")
-        digest = json.loads(choice["message"]["content"])
+        if api_format == "responses":
+            if result.get("status") == "incomplete":
+                raise DigestError("AI 输出未完成，请减少条数或增加输出额度")
+            if result.get("error") or result.get("status") in {"failed", "cancelled"}:
+                raise DigestError("AI 服务未完成摘要（响应内容已隐藏）")
+            content = "".join(part["text"] for item in result["output"] if item.get("type") == "message"
+                              for part in item.get("content", []) if part.get("type") == "output_text")
+        else:
+            choice = result["choices"][0]
+            if choice.get("finish_reason") == "length":
+                raise DigestError("AI 输出超过长度限制，请减少 max_highlights")
+            content = choice["message"]["content"]
+        content = content.strip()
+        if content.startswith("```"):
+            content = re.sub(r"\A```(?:json)?\s*|\s*```\Z", "", content)
+        digest = json.loads(content)
         if not isinstance(digest, dict) or not isinstance(digest.get("overview"), str):
             raise ValueError("缺少 overview")
         if not isinstance(digest.get("highlights"), list):
             raise ValueError("缺少 highlights")
     except (KeyError, IndexError, TypeError, ValueError):
-        raise DigestError("DeepSeek 摘要 JSON 格式异常") from None
+        raise DigestError("AI 摘要 JSON 格式异常") from None
     known_ids = {item["id"] for item in articles}
     highlights, seen = [], set()
     for item in digest["highlights"]:
@@ -307,7 +329,7 @@ def summarize(articles: list[dict], kind: str, start: datetime, end: datetime,
         if len(highlights) >= maximum:
             break
     if not highlights:
-        raise DigestError("DeepSeek 未生成引用有效文章的摘要")
+        raise DigestError("AI 未生成引用有效文章的摘要")
     return {"overview": digest["overview"][:2000], "highlights": highlights}
 
 
@@ -358,6 +380,15 @@ def load_config(path: Path) -> dict:
     try:
         if not isinstance(config, dict) or not config["feeds"]:
             raise ValueError()
+        # 兼容原来只配置 deepseek_model 的项目。
+        config.setdefault("ai_base_url", "https://api.deepseek.com")
+        config.setdefault("ai_api_format", "chat_completions")
+        config.setdefault("ai_model", config.get("deepseek_model", "deepseek-chat"))
+        if (not isinstance(config["ai_base_url"], str) or not canonical_url(config["ai_base_url"])
+                or urlsplit(config["ai_base_url"]).query or urlsplit(config["ai_base_url"]).fragment):
+            raise ValueError()
+        if config["ai_api_format"] not in {"responses", "chat_completions"}:
+            raise ValueError()
         ZoneInfo(config["timezone"])
         for source in config["feeds"]:
             if not source["name"] or not canonical_url(source["url"]):
@@ -371,7 +402,7 @@ def load_config(path: Path) -> dict:
             for kind in ("daily", "weekly", "monthly"):
                 if not isinstance(config[field][kind], int) or config[field][kind] <= 0:
                     raise ValueError()
-        if not isinstance(config["deepseek_model"], str) or not config["deepseek_model"]:
+        if not isinstance(config["ai_model"], str) or not config["ai_model"].strip():
             raise ValueError()
     except (KeyError, TypeError, ValueError):
         raise DigestError("config.json 配置无效（保留天数至少 62 天；条数和超时必须为正整数）") from None

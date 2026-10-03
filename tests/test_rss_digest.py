@@ -102,13 +102,40 @@ class ProviderTests(unittest.TestCase):
             {"id": "a", "summary": "<img onerror=alert(1)>", "category": "AI"},
             {"id": "a", "summary": "重复引用", "category": "AI"}]}
         response = {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(generated)}}]}
+        chat_config = {**CONFIG, "ai_api_format": "chat_completions"}
         with patch.object(app, "api_json", return_value=response):
-            digest = app.summarize([article()], "daily", now - timedelta(days=1), now, CONFIG, "test")
+            digest = app.summarize([article()], "daily", now - timedelta(days=1), now, chat_config, "test")
         self.assertEqual(len(digest["highlights"]), 1)
         title, html = app.render_report(digest, [article()], "daily", "test", now, now, 1, [])
         self.assertNotIn("<script>", html)
         self.assertNotIn("<img", html)
         self.assertIn("&lt;script&gt;", html)
+
+    def test_responses_request_and_output_ignore_reasoning_and_accept_json_fence(self):
+        now = datetime.now(TZ)
+        generated = {"overview": "中文概览", "highlights": [
+            {"id": "a", "summary": "RSS 摘要", "category": "AI"}]}
+        response = {"status": "completed", "output": [
+            {"type": "reasoning", "summary": []},
+            {"type": "message", "content": [{"type": "output_text", "text":
+                '```json\n' + json.dumps(generated) + '\n```'}]}]}
+        config = {**CONFIG, "ai_api_format": "responses", "ai_base_url": "http://example.com/v1/",
+                  "ai_model": "gpt-5.5"}
+        with patch.object(app, "api_json", return_value=response) as api:
+            digest = app.summarize([article()], "daily", now - timedelta(days=1), now, config, "test")
+        self.assertEqual(digest, generated)
+        url, payload = api.call_args.args
+        self.assertEqual(url, "http://example.com/v1/responses")
+        self.assertEqual(payload["model"], "gpt-5.5")
+        self.assertFalse(payload["store"])
+        self.assertEqual(payload["input"][0]["content"][0]["type"], "input_text")
+        self.assertNotIn("temperature", payload)
+
+    def test_responses_incomplete_is_not_sent_as_valid_digest(self):
+        now = datetime.now(TZ)
+        with patch.object(app, "api_json", return_value={"status": "incomplete", "output": []}):
+            with self.assertRaises(app.DigestError):
+                app.summarize([article()], "daily", now, now, {**CONFIG, "ai_api_format": "responses"}, "test")
 
     def test_pushplus_rejection_does_not_expose_response_secret(self):
         with patch.object(app, "api_json", return_value={"code": 600, "msg": "secret-key"}):

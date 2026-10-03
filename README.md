@@ -1,6 +1,7 @@
-# 科技 RSS → DeepSeek 摘要 → 微信推送
+# 科技 RSS → AI 摘要 → 微信推送
 
-Python + GitHub Actions + DeepSeek + PushPlus。无需自己的服务器，无需数据库。
+Python + GitHub Actions + AI API + PushPlus。无需自己的服务器，无需数据库。
+当前配置使用 Sub2API 的 `gpt-5.5` 模型，通过 Responses API 生成摘要；也支持 DeepSeek 官方 Chat Completions API。
 
 | 报告 | 默认发送时间（北京时间） | 内容范围 |
 | --- | --- | --- |
@@ -8,7 +9,7 @@ Python + GitHub Actions + DeepSeek + PushPlus。无需自己的服务器，无�
 | 周报 | 每周一 09:00 | 上周一 00:00 至本周一 00:00 |
 | 月报 | 每月 1 日 10:00 | 上月 1 日 00:00 至本月 1 日 00:00 |
 
-日报/周报/月报都调用 DeepSeek 生成中文摘要，附原文链接，通过 PushPlus 推送。
+日报/周报/月报都调用配置的 AI 模型生成中文摘要，附原文链接，通过 PushPlus 推送。
 英文 RSS 也用中文总结；摘要仅依据 RSS 标题和摘录，不抓取文章全文。
 
 ## 1. 上传至 GitHub
@@ -35,13 +36,13 @@ README.md
 
 | Secret 名称 | 填写内容 |
 | --- | --- |
-| `DEEPSEEK_API_KEY` | 你的 DeepSeek API Key |
+| `DEEPSEEK_API_KEY` | 当前 AI 服务的 API Key（保留原 Secret 名称，第三方服务也使用此项） |
 | `PUSHPLUS_TOKEN` | 你的 PushPlus Token |
 
 不要把实际 Token 填入 `config.json`、工作流文件或 Git 提交。`.env.example` 只有占位符；脚本不会自动读取 `.env`。
 如果 Token 已公开或粘贴进聊天，建议在服务控制台更换，再配置新 Token。
 
-在 PushPlus 控制台按提示绑定接收消息的微信，并确保 DeepSeek 账户可以调用 API。
+在 PushPlus 控制台按提示绑定接收消息的微信，并确保 AI 服务账户可以调用配置的模型。
 
 ## 3. 首次运行
 
@@ -65,7 +66,7 @@ reports/monthly/2026-09.json
 ```
 
 每次运行补采 RSS 中仍可取得的最近 35 天条目；日常存档保留 120 天的文章文件。
-周报和月报从这些 JSON 中筛选上周/上月文章，再交给 DeepSeek 总结，无需数据库。
+周报和月报从这些 JSON 中筛选上周/上月文章，再交给 AI 总结，无需数据库。
 删除旧文件不会清除 Git 历史，仓库仍会随长期运行增长。
 
 首次使用时，RSS 通常无法提供完整的上周或上月历史；启用后的报告会逐渐完整。
@@ -80,12 +81,30 @@ reports/monthly/2026-09.json
 单个源失败时继续使用其他源，报告注明失败来源；全部失败且本期没有存档时任务失败。
 不带可解析日期的文章会跳过，避免归入错误月份。按标准化后的原文 URL 去重，跨媒体重复事件由 AI 尽量合并。
 
-`max_articles` 控制交给 DeepSeek 的候选条数，`max_highlights` 控制最终要点数量。
+`max_articles` 控制交给 AI 的候选条数，`max_highlights` 控制最终要点数量。
 日报候选按来源轮流选择，同一来源内优先最新条目；周报/月报先覆盖不同日期，再兼顾当天不同来源，避免只选到月末新闻。月报是精选摘要，不保证覆盖所有事件。
 保留天数 `archive_retention_days` 至少为 62。减少候选条数和要点数量通常可以降低 API 消耗。
 
 修改时间需同时修改 `.github/workflows/rss-reports.yml` 中的 `schedule` 和 `case` 匹配项。
 cron 使用 UTC，北京时间需要减去 8 小时。`config.json` 的 `timezone` 控制报告日期边界，不会自动修改 cron。
+
+## AI 接口配置
+
+`config.json` 的三个字段控制服务地址、接口格式和模型：
+
+```json
+{
+  "ai_base_url": "http://47.109.76.66:18001/v1",
+  "ai_api_format": "responses",
+  "ai_model": "gpt-5.5"
+}
+```
+
+以上是当前 Sub2API 配置。脚本调用 `/v1/responses`，并从返回结果的消息文本中解析摘要。
+Key 必须属于这个服务，保存在 GitHub Secret `DEEPSEEK_API_KEY` 中；无需重命名 Secret。
+
+改回 DeepSeek 官方服务时，将三个字段分别设为 `https://api.deepseek.com`、`chat_completions`、`deepseek-chat`，并更新 Secret 为官方 Key。
+其他兼容服务使用它自己提供的 Base URL、接口格式与模型名称；不要用第三方 Key 请求官方地址。
 
 ## 本地检查
 
@@ -103,7 +122,7 @@ python -m venv .venv
 $env:DEEPSEEK_API_KEY = '你的新 API Key'
 $env:PUSHPLUS_TOKEN = '你的新 PushPlus Token'
 
-# 调用 DeepSeek，生成 output/ 下的 HTML，暂不发送。
+# 调用配置的 AI 服务，生成 output/ 下的 HTML，暂不发送。
 .\.venv\Scripts\python.exe rss_digest.py --type daily --no-push
 
 # 真正发送日报；周报/月报改为 weekly / monthly。
@@ -116,10 +135,10 @@ $env:PUSHPLUS_TOKEN = '你的新 PushPlus Token'
 
 - GitHub 定时任务可能排队、延迟甚至漏跑，特别是整点高峰；08:00 等时间是计划时间，不是送达保证。可修改分钟避开整点。
 - 公共仓库长期无活动时，GitHub 可能暂停定时工作流；确认 Actions 中的工作流仍处于启用状态。
-- 无需租用服务器，但 DeepSeek API、GitHub Actions 私有仓库配额及 PushPlus 服务受各自价格和额度限制。
+- 无需租用服务器，但 AI API、GitHub Actions 私有仓库配额及 PushPlus 服务受各自价格和额度限制。
 - `HTTP 401/403`：检查 Secret、API 权限和账户状态；`429`：检查调用额度或频率。
 - PushPlus 状态码 `200` 表示服务已接收，实际微信送达仍由 PushPlus 处理。
-- DeepSeek 对临时网络错误、429 和 5xx 最多尝试三次；PushPlus 不自动重试，避免请求超时但已送达时重复发送。
+- AI 请求对临时网络错误、429 和 5xx 最多尝试三次；PushPlus 不自动重试，避免请求超时但已送达时重复发送。
 - AI 或推送失败时，工作流仍尝试提交已采集的文章；修复后可重跑。推送成功但保存发送记录失败时，重跑可能重复发送。
 - 源站可能屏蔽请求或修改 RSS 地址，查看日志并在 `config.json` 中调整来源。摘要与推送失败不会用伪造摘要顶替。
 
