@@ -416,10 +416,9 @@ def push_ntfy(title: str, content: str, topic: str, server: str) -> None:
     if not canonical_url(base):
         raise DigestError("ntfy_server 必须是 http 或 https 地址")
     try:
-        response = requests.post(f"{base}/{topic}", data=content.encode("utf-8"), timeout=30,
-                                 headers={"Title": title, "X-Format": "html",
-                                          "Content-Type": "text/html; charset=utf-8",
-                                          "User-Agent": USER_AGENT})
+        response = requests.post(f"{base}/{topic}", json={"topic": topic, "title": title,
+                                 "message": content, "format": "html"}, timeout=30,
+                                 headers={"Content-Type": "application/json", "User-Agent": USER_AGENT})
     except requests.RequestException:
         raise DigestError("ntfy 网络请求失败（响应内容已隐藏）") from None
     if not response.ok:

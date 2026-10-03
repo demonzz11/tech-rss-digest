@@ -158,8 +158,8 @@ class ProviderTests(unittest.TestCase):
         with patch.object(app.requests, "post", return_value=response) as post:
             app.push_ntfy("科技日报", "<h2>摘要</h2>", "topic_secret_123", "https://ntfy.sh")
         self.assertEqual(post.call_args.args[0], "https://ntfy.sh/topic_secret_123")
-        self.assertEqual(post.call_args.kwargs["headers"]["X-Format"], "html")
-        self.assertEqual(post.call_args.kwargs["data"], "<h2>摘要</h2>".encode())
+        self.assertEqual(post.call_args.kwargs["json"]["format"], "html")
+        self.assertEqual(post.call_args.kwargs["json"]["message"], "<h2>摘要</h2>")
 
     def test_ntfy_rejects_unsafe_topic_without_network_request(self):
         with patch.object(app.requests, "post") as post:
