@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+archive/
+output/
+.pytest_cache/
+tech-rss-digest.zip

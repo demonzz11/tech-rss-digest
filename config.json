@@ -1,0 +1,17 @@
+{
+  "timezone": "Asia/Shanghai",
+  "deepseek_model": "deepseek-chat",
+  "request_timeout_seconds": 30,
+  "max_entries_per_feed": 100,
+  "archive_retention_days": 120,
+  "max_articles": {"daily": 35, "weekly": 80, "monthly": 120},
+  "max_highlights": {"daily": 10, "weekly": 15, "monthly": 20},
+  "feeds": [
+    {"name": "IT之家", "url": "https://www.ithome.com/rss/"},
+    {"name": "Solidot", "url": "https://www.solidot.org/index.rss"},
+    {"name": "阮一峰的网络日志", "url": "https://www.ruanyifeng.com/blog/atom.xml"},
+    {"name": "TechCrunch", "url": "https://techcrunch.com/feed/"},
+    {"name": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
+    {"name": "The Verge", "url": "https://www.theverge.com/rss/index.xml"}
+  ]
+}

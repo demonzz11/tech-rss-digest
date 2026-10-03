@@ -1,0 +1,105 @@
+name: 科技 RSS 日报 / 周报 / 月报
+
+on:
+  schedule:
+    # GitHub cron 使用 UTC；下列时间对应北京时间。
+    - cron: '0 0 * * *'       # 每天 08:00 日报
+    - cron: '0 1 * * 1'       # 周一 09:00 上周周报
+    - cron: '0 2 1 * *'       # 每月 1 日 10:00 上月月报
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: 报告类型
+        type: choice
+        options: [daily, weekly, monthly]
+        default: daily
+      force:
+        description: 重新发送已经发送过的本期报告
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tech-rss-reports
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: 安装依赖
+        run: python -m pip install -r requirements.txt
+
+      - name: 检查日期边界、存档及推送流程
+        run: python -m unittest discover -s tests -v
+
+      - name: 准备独立数据分支
+        id: archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # 网络/权限错误应中止，只有确认分支不存在时才创建空分支。
+          remote_ref=$(git ls-remote --heads origin refs/heads/rss-data)
+          if [ -n "$remote_ref" ]; then
+            git fetch origin refs/heads/rss-data
+            git worktree add --detach archive FETCH_HEAD
+          else
+            git worktree add --orphan -b rss-data archive
+          fi
+
+      - name: 抓取、生成摘要并推送
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          REPORT_TYPE: ${{ inputs.report_type }}
+          FORCE: ${{ inputs.force }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = 'schedule' ]; then
+            case "$SCHEDULE" in
+              '0 0 * * *') REPORT_TYPE=daily ;;
+              '0 1 * * 1') REPORT_TYPE=weekly ;;
+              '0 2 1 * *') REPORT_TYPE=monthly ;;
+              *) echo '未知调度表达式'; exit 1 ;;
+            esac
+          fi
+          args=(--type "$REPORT_TYPE" --archive-dir archive --report-dir output)
+          if [ "$FORCE" = 'true' ]; then args+=(--force); fi
+          python rss_digest.py "${args[@]}"
+
+      - name: 保存采集数据与发送记录（生成或推送失败也保存采集数据）
+        if: ${{ always() && steps.archive.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C archive add --all
+          if ! git -C archive diff --cached --quiet; then
+            git -C archive commit -m "Update RSS archive (${GITHUB_RUN_ID})"
+            git -C archive push origin HEAD:refs/heads/rss-data
+          fi
+
+      - name: 保存报告预览
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rss-report-${{ github.run_id }}
+          path: output/
+          if-no-files-found: ignore
+          retention-days: 30
