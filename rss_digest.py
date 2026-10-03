@@ -1,4 +1,4 @@
-"""RSS -> AI 摘要 -> PushPlus，JSON 文件存档，无服务器、无数据库。"""
+"""RSS -> AI 摘要 -> 手机通知，JSON 文件存档，无服务器、无数据库。"""
 
 from __future__ import annotations
 
