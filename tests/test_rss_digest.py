@@ -153,6 +153,20 @@ class ProviderTests(unittest.TestCase):
         self.assertIn("实名认证", str(caught.exception))
         self.assertNotIn("secret-key", str(caught.exception))
 
+    def test_ntfy_validates_topic_and_sends_html(self):
+        response = Mock(ok=True, status_code=200)
+        with patch.object(app.requests, "post", return_value=response) as post:
+            app.push_ntfy("科技日报", "<h2>摘要</h2>", "topic_secret_123", "https://ntfy.sh")
+        self.assertEqual(post.call_args.args[0], "https://ntfy.sh/topic_secret_123")
+        self.assertEqual(post.call_args.kwargs["headers"]["X-Format"], "html")
+        self.assertEqual(post.call_args.kwargs["data"], "<h2>摘要</h2>".encode())
+
+    def test_ntfy_rejects_unsafe_topic_without_network_request(self):
+        with patch.object(app.requests, "post") as post:
+            with self.assertRaises(app.DigestError):
+                app.push_ntfy("title", "content", "topic/with/path", "https://ntfy.sh")
+        post.assert_not_called()
+
     def test_push_timeout_is_not_retried(self):
         with patch.object(app.requests, "post", side_effect=app.requests.Timeout("secret-key")) as post:
             with self.assertRaises(app.DigestError) as caught:
@@ -182,7 +196,9 @@ class ProviderTests(unittest.TestCase):
 @patch.object(app, "check_available_models", new=Mock())
 class PipelineTests(unittest.TestCase):
     def args(self, root, **changes):
-        values = dict(type="daily", config=Path(__file__).parents[1] / "config.json",
+        test_config = root / "config.json"
+        test_config.write_text(json.dumps({**CONFIG, "push_service": "pushplus"}), encoding="utf-8")
+        values = dict(type="daily", config=test_config,
                       archive_dir=root / "archive", report_dir=root / "output",
                       dry_run=False, no_push=False, force=False)
         values.update(changes)

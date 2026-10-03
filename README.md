@@ -1,6 +1,6 @@
 # 科技 RSS → AI 摘要 → 微信推送
 
-Python + GitHub Actions + AI API + PushPlus。无需自己的服务器，无需数据库。
+Python + GitHub Actions + AI API + ntfy。无需自己的服务器，无需数据库。
 当前配置使用本机 CC Switch 同一服务的 `gpt-6.1-sol` 模型，通过 Responses API 生成摘要；也支持 Chat Completions API 及 DeepSeek 官方服务。
 
 | 报告 | 默认发送时间（北京时间） | 内容范围 |
@@ -9,7 +9,7 @@ Python + GitHub Actions + AI API + PushPlus。无需自己的服务器，无需�
 | 周报 | 每周一 09:00 | 上周一 00:00 至本周一 00:00 |
 | 月报 | 每月 1 日 10:00 | 上月 1 日 00:00 至本月 1 日 00:00 |
 
-日报/周报/月报都调用配置的 AI 模型生成中文摘要，附原文链接，通过 PushPlus 推送。
+日报/周报/月报都调用配置的 AI 模型生成中文摘要，附原文链接，通过 ntfy 推送。
 英文 RSS 也用中文总结；摘要仅依据 RSS 标题和摘录，不抓取文章全文。
 
 ## 1. 上传至 GitHub
@@ -37,12 +37,12 @@ README.md
 | Secret 名称 | 填写内容 |
 | --- | --- |
 | `DEEPSEEK_API_KEY` | 当前 AI 服务的 API Key（保留原 Secret 名称，第三方服务也使用此项） |
-| `PUSHPLUS_TOKEN` | 你的 PushPlus Token |
+| `NTFY_TOPIC` | ntfy 主题名（当前配置使用 ntfy） |
 
 不要把实际 Token 填入 `config.json`、工作流文件或 Git 提交。`.env.example` 只有占位符；脚本不会自动读取 `.env`。
 如果 Token 已公开或粘贴进聊天，建议在服务控制台更换，再配置新 Token。
 
-在 PushPlus 控制台按提示绑定接收消息的微信，并确保 AI 服务账户可以调用配置的模型。
+在手机安装 ntfy App，订阅 `NTFY_TOPIC` 对应的主题即可接收通知，并确保 AI 服务账户可以调用配置的模型。
 
 ## 3. 首次运行
 
@@ -60,7 +60,7 @@ Actions 临时机器在运行结束后消失，所以历史数据写入仓库的
 
 ```text
 articles/2026-10-03.json            # 按文章发布时间归档的 RSS 数据
-reports/daily/2026-10-03.json       # 摘要和 PushPlus 接收记录
+reports/daily/2026-10-03.json       # 摘要和 ntfy 接收记录
 reports/weekly/2026-09-21_2026-09-27.json
 reports/monthly/2026-09.json
 ```
@@ -72,7 +72,7 @@ reports/monthly/2026-09.json
 首次使用时，RSS 通常无法提供完整的上周或上月历史；启用后的报告会逐渐完整。
 漏跑或来源已删掉的历史条目无法保证补回。报告会提示历史覆盖限制。
 
-同一期报告被 PushPlus 接收后，再次运行会跳过。日报还会过滤近三天已推荐过的原文链接。
+同一期报告被 ntfy 接收后，再次运行会跳过。日报还会过滤近三天已推荐过的原文链接。
 周报/月报允许再次总结日报中的事件。手动运行时勾选 `force` 可以重发同一期。
 
 ## 修改 RSS、条数及时间
@@ -127,7 +127,7 @@ python -m venv .venv
 
 # 当前 PowerShell 进程中配置环境变量（请自行替换占位符）。
 $env:DEEPSEEK_API_KEY = '你的新 API Key'
-$env:PUSHPLUS_TOKEN = '你的新 PushPlus Token'
+$env:NTFY_TOPIC = '你的 ntfy 主题'
 
 # 调用配置的 AI 服务，生成 output/ 下的 HTML，暂不发送。
 .\.venv\Scripts\python.exe rss_digest.py --type daily --no-push
@@ -142,11 +142,10 @@ $env:PUSHPLUS_TOKEN = '你的新 PushPlus Token'
 
 - GitHub 定时任务可能排队、延迟甚至漏跑，特别是整点高峰；08:00 等时间是计划时间，不是送达保证。可修改分钟避开整点。
 - 公共仓库长期无活动时，GitHub 可能暂停定时工作流；确认 Actions 中的工作流仍处于启用状态。
-- 无需租用服务器，但 AI API、GitHub Actions 私有仓库配额及 PushPlus 服务受各自价格和额度限制。
+- 无需租用服务器，但 AI API、GitHub Actions 私有仓库配额及 ntfy 服务受各自服务政策和额度限制。
 - `HTTP 401/403`：检查 Secret、API 权限和账户状态；`429`：检查调用额度或频率。
-- PushPlus 状态码 `905`：PushPlus 账户未完成实名认证；完成认证后重新运行本期日报即可。失败报告不会标记为已发送。
-- PushPlus 状态码 `200` 表示服务已接收，实际微信送达仍由 PushPlus 处理。
-- AI 请求对临时网络错误、429 和 5xx 最多尝试三次；PushPlus 不自动重试，避免请求超时但已送达时重复发送。
+- ntfy 返回 HTTP 2xx 表示服务已接收；主题名相当于访问凭据，请勿公开分享。
+- AI 请求对临时网络错误、429 和 5xx 最多尝试三次；ntfy 不自动重试，避免请求超时但已送达时重复发送。
 - AI 或推送失败时，工作流仍尝试提交已采集的文章；修复后可重跑。推送成功但保存发送记录失败时，重跑可能重复发送。
 - 源站可能屏蔽请求或修改 RSS 地址，查看日志并在 `config.json` 中调整来源。摘要与推送失败不会用伪造摘要顶替。
 

@@ -64,7 +64,7 @@ jobs:
       - name: 抓取、生成摘要并推送
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           EVENT_NAME: ${{ github.event_name }}
           SCHEDULE: ${{ github.event.schedule }}
           REPORT_TYPE: ${{ inputs.report_type }}

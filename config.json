@@ -5,6 +5,8 @@
   "ai_model": "gpt-6.1-sol",
   "ai_headers": {"User-Agent": "codex_cli_rs/0.106.0", "originator": "codex_cli_rs"},
   "ai_max_output_tokens": null,
+  "push_service": "ntfy",
+  "ntfy_server": "https://ntfy.sh",
   "request_timeout_seconds": 30,
   "max_entries_per_feed": 100,
   "archive_retention_days": 120,

@@ -408,6 +408,24 @@ def push_report(title: str, content: str, token: str) -> None:
         raise DigestError(f"PushPlus 拒绝推送，状态码 {safe_code}（响应内容已隐藏）")
 
 
+def push_ntfy(title: str, content: str, topic: str, server: str) -> None:
+    topic = topic.strip()
+    if not re.fullmatch(r"[A-Za-z0-9_-]{8,80}", topic):
+        raise DigestError("NTFY_TOPIC 无效：只能包含字母、数字、下划线或短横线，长度 8-80")
+    base = server.rstrip("/")
+    if not canonical_url(base):
+        raise DigestError("ntfy_server 必须是 http 或 https 地址")
+    try:
+        response = requests.post(f"{base}/{topic}", data=content.encode("utf-8"), timeout=30,
+                                 headers={"Title": title, "X-Format": "html",
+                                          "Content-Type": "text/html; charset=utf-8",
+                                          "User-Agent": USER_AGENT})
+    except requests.RequestException:
+        raise DigestError("ntfy 网络请求失败（响应内容已隐藏）") from None
+    if not response.ok:
+        raise DigestError(f"ntfy 拒绝推送，状态码 {response.status_code}（响应内容已隐藏）")
+
+
 def prune_archive(archive: Path, now: datetime, retention_days: int) -> None:
     cutoff = now.date() - timedelta(days=retention_days)
     for path in (archive / "articles").glob("*.json"):
@@ -419,6 +437,12 @@ def load_config(path: Path) -> dict:
     config = read_json(path)
     try:
         if not isinstance(config, dict) or not config["feeds"]:
+            raise ValueError()
+        config.setdefault("push_service", "pushplus")
+        config.setdefault("ntfy_server", "https://ntfy.sh")
+        if config["push_service"] not in {"ntfy", "pushplus"}:
+            raise ValueError()
+        if not isinstance(config["ntfy_server"], str) or not canonical_url(config["ntfy_server"]):
             raise ValueError()
         # 兼容原来只配置 deepseek_model 的项目。
         config.setdefault("ai_base_url", "https://api.deepseek.com")
@@ -469,12 +493,17 @@ def run(args: argparse.Namespace) -> None:
             LOG.info("本期 %s 已被 PushPlus 接收，跳过；需要重发时使用 --force", key)
             return
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
+    push_service = config["push_service"]
     token = os.getenv("PUSHPLUS_TOKEN", "").strip()
+    ntfy_topic = os.getenv("NTFY_TOPIC", "").strip()
     if not args.dry_run:
         if not api_key:
             raise DigestError("缺少 DEEPSEEK_API_KEY 环境变量 / GitHub Secret")
-        if not args.no_push and not token:
-            raise DigestError("缺少 PUSHPLUS_TOKEN 环境变量 / GitHub Secret")
+        if not args.no_push:
+            if push_service == "pushplus" and not token:
+                raise DigestError("缺少 PUSHPLUS_TOKEN 环境变量 / GitHub Secret")
+            if push_service == "ntfy" and not ntfy_topic:
+                raise DigestError("缺少 NTFY_TOPIC 环境变量 / GitHub Secret")
     # 周报/月报也补采当前 RSS 中仍然可获取的历史条目。
     fetched, failures = collect_feeds(config, now)
     if not args.dry_run:
@@ -513,7 +542,12 @@ def run(args: argparse.Namespace) -> None:
     if args.no_push:
         LOG.info("已生成报告预览：%s；未推送", preview)
         return
-    push_report(title, content, token)
+    if push_service == "pushplus":
+        push_report(title, content, token)
+    elif push_service == "ntfy":
+        push_ntfy(title, content, ntfy_topic, config["ntfy_server"])
+    else:
+        raise DigestError("config.json 的 push_service 只能是 ntfy 或 pushplus")
     record["sent_at"] = datetime.now(tz).isoformat()
     write_json(report_path, record)
     LOG.info("PushPlus 已接收报告：%s", title)
