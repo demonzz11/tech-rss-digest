@@ -249,7 +249,17 @@ def api_json(url: str, payload: dict, *, headers: dict | None = None,
                 time.sleep(2 ** (attempt + 1))
                 continue
         if not response.ok:
-            raise DigestError(f"外部 API 返回 HTTP {response.status_code}（响应内容已隐藏）")
+            diagnosis = ""
+            try:
+                error = response.json().get("error", {})
+                message = str(error.get("message", "")).lower() if isinstance(error, dict) else ""
+                if "all available accounts" in message and "rate-limit" in message:
+                    diagnosis = "；第三方平台所有可用上游账号均被限流"
+                elif "model" in message and ("not found" in message or "does not exist" in message):
+                    diagnosis = "；当前账号无法使用配置的模型"
+            except (ValueError, AttributeError):
+                pass
+            raise DigestError(f"外部 API 返回 HTTP {response.status_code}{diagnosis}（响应内容已隐藏）")
         try:
             result = response.json()
         except ValueError:
@@ -258,6 +268,25 @@ def api_json(url: str, payload: dict, *, headers: dict | None = None,
             raise DigestError("外部 API JSON 格式异常")
         return result
     raise DigestError("外部 API 请求失败")
+
+
+def check_available_models(config: dict, api_key: str) -> None:
+    """尽力检查第三方账号的模型权限，不要求每个兼容服务都实现 models。"""
+    try:
+        response = requests.get(config["ai_base_url"].rstrip("/") + "/models",
+                                headers={"Authorization": f"Bearer {api_key}"}, timeout=20)
+        if not response.ok:
+            return
+        data = response.json()
+        models = [item["id"] for item in data.get("data", []) if isinstance(item, dict)
+                  and isinstance(item.get("id"), str)
+                  and re.fullmatch(r"(?:gpt|deepseek|DLM)[A-Za-z0-9._/-]{0,70}", item["id"])]
+    except (requests.RequestException, ValueError, AttributeError, TypeError):
+        return
+    if models:
+        LOG.info("当前 API Key 可用模型：%s", "、".join(models))
+        if config["ai_model"] not in models:
+            raise DigestError("配置的 AI 模型不在当前账号可用列表中，请根据日志修改 ai_model")
 
 
 def summarize(articles: list[dict], kind: str, start: datetime, end: datetime,
@@ -447,6 +476,7 @@ def run(args: argparse.Namespace) -> None:
         LOG.info("抓取检查完成：未调用 DeepSeek、未推送、未修改存档")
         return
     if articles:
+        check_available_models(config, api_key)
         digest = summarize(articles, args.type, start, end, config, api_key)
     else:
         digest = {"overview": "本期没有符合时间范围的新文章。历史报告仅汇总已采集的 RSS 数据。", "highlights": []}

@@ -1,8 +1,8 @@
 {
   "timezone": "Asia/Shanghai",
   "ai_base_url": "http://47.109.76.66:18001/v1",
-  "ai_api_format": "responses",
-  "ai_model": "gpt-5.5",
+  "ai_api_format": "chat_completions",
+  "ai_model": "deepseek-chat",
   "request_timeout_seconds": 30,
   "max_entries_per_feed": 100,
   "archive_retention_days": 120,

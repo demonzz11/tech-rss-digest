@@ -150,7 +150,26 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(post.call_count, 1)
         self.assertNotIn("secret-key", str(caught.exception))
 
+    def test_model_discovery_uses_current_key_and_rejects_unavailable_model(self):
+        response = Mock(ok=True)
+        response.json.return_value = {"data": [{"id": "deepseek-chat"}]}
+        with patch.object(app.requests, "get", return_value=response) as get:
+            with self.assertRaises(app.DigestError):
+                app.check_available_models({**CONFIG, "ai_model": "gpt-5.5"}, "current-key")
+        self.assertEqual(get.call_args.kwargs["headers"]["Authorization"], "Bearer current-key")
 
+    def test_upstream_rate_limit_error_is_clear_without_echoing_secret(self):
+        response = Mock(ok=False, status_code=429)
+        response.json.return_value = {"error": {"message":
+            "All available accounts are currently rate-limited. secret-key"}}
+        with patch.object(app.requests, "post", return_value=response):
+            with self.assertRaises(app.DigestError) as caught:
+                app.api_json("http://example.com/v1/chat/completions", {})
+        self.assertIn("上游账号均被限流", str(caught.exception))
+        self.assertNotIn("secret-key", str(caught.exception))
+
+
+@patch.object(app, "check_available_models", new=Mock())
 class PipelineTests(unittest.TestCase):
     def args(self, root, **changes):
         values = dict(type="daily", config=Path(__file__).parents[1] / "config.json",

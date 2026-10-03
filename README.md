@@ -1,7 +1,7 @@
 # 科技 RSS → AI 摘要 → 微信推送
 
 Python + GitHub Actions + AI API + PushPlus。无需自己的服务器，无需数据库。
-当前配置使用 Sub2API 的 `gpt-5.5` 模型，通过 Responses API 生成摘要；也支持 DeepSeek 官方 Chat Completions API。
+当前配置使用 Sub2API 的 `deepseek-chat` 模型，通过 Chat Completions API 生成摘要；也支持 Responses API 及 DeepSeek 官方服务。
 
 | 报告 | 默认发送时间（北京时间） | 内容范围 |
 | --- | --- | --- |
@@ -95,16 +95,18 @@ cron 使用 UTC，北京时间需要减去 8 小时。`config.json` 的 `timezon
 ```json
 {
   "ai_base_url": "http://47.109.76.66:18001/v1",
-  "ai_api_format": "responses",
-  "ai_model": "gpt-5.5"
+  "ai_api_format": "chat_completions",
+  "ai_model": "deepseek-chat"
 }
 ```
 
-以上是当前 Sub2API 配置。脚本调用 `/v1/responses`，并从返回结果的消息文本中解析摘要。
+以上是当前 Sub2API 配置。脚本调用 `/v1/chat/completions`，并从返回结果的消息文本中解析摘要。
 Key 必须属于这个服务，保存在 GitHub Secret `DEEPSEEK_API_KEY` 中；无需重命名 Secret。
 
 改回 DeepSeek 官方服务时，将三个字段分别设为 `https://api.deepseek.com`、`chat_completions`、`deepseek-chat`，并更新 Secret 为官方 Key。
 其他兼容服务使用它自己提供的 Base URL、接口格式与模型名称；不要用第三方 Key 请求官方地址。
+平台如支持 `/models`，脚本会在日志中列出当前 Key 可用模型并检查配置。截图中的模型名不一定属于当前 Key 的权限组。
+使用可用的 GPT 模型时可将 `ai_api_format` 设为 `responses`。Responses API 的请求与输出解析已包含在脚本中。
 
 ## 本地检查
 
