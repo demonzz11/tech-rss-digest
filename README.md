@@ -96,13 +96,17 @@ cron 使用 UTC，北京时间需要减去 8 小时。`config.json` 的 `timezon
 {
   "ai_base_url": "http://47.109.76.66:18001/v1",
   "ai_api_format": "responses",
-  "ai_model": "gpt-6.1-sol"
+  "ai_model": "gpt-6.1-sol",
+  "ai_headers": {"User-Agent": "codex_cli_rs/0.106.0", "originator": "codex_cli_rs"},
+  "ai_max_output_tokens": null
 }
 ```
 
 以上是当前 Sub2API 配置。脚本调用 `/v1/responses`，并从返回结果的消息文本中解析摘要。
 Key 必须属于这个服务，保存在 GitHub Secret `DEEPSEEK_API_KEY` 中；无需重命名 Secret。
 CC Switch 只负责本机的配置切换。Actions 使用保存在 GitHub Secret 中的 Key 直接访问公网 API，不依赖本机电脑或 CC Switch 程序运行。
+当前服务使用 Codex 客户端请求头，并省略 Responses 的可选输出额度参数；这组请求格式已经过实际接口验证。
+`ai_headers` 只存放非敏感协议头；API Key 始终从 Secret 读取。其他 Responses 服务可将 `ai_headers` 设为空对象，并按需要设定整数形式的 `ai_max_output_tokens`。
 
 改回 DeepSeek 官方服务时，将三个字段分别设为 `https://api.deepseek.com`、`chat_completions`、`deepseek-chat`，并更新 Secret 为官方 Key。
 其他兼容服务使用它自己提供的 Base URL、接口格式与模型名称；不要用第三方 Key 请求官方地址。

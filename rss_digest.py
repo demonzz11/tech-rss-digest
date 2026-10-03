@@ -308,15 +308,18 @@ def summarize(articles: list[dict], kind: str, start: datetime, end: datetime,
         endpoint = "/responses"
         payload = {"model": config["ai_model"], "instructions": system,
                    "input": [{"role": "user", "content": [{"type": "input_text", "text": user}]}],
-                   "store": False, "stream": False, "max_output_tokens": 10000}
+                   "store": False, "stream": False}
+        if config["ai_max_output_tokens"] is not None:
+            payload["max_output_tokens"] = config["ai_max_output_tokens"]
     else:
         endpoint = "/chat/completions"
         payload = {"model": config["ai_model"],
                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                    "response_format": {"type": "json_object"}, "temperature": 0.3, "max_tokens": 6000}
     LOG.info("AI 摘要：模型 %s，接口 %s", config["ai_model"], api_format)
+    headers = {**config["ai_headers"], "Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     result = api_json(config["ai_base_url"].rstrip("/") + endpoint, payload,
-                      headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                      headers=headers,
                       timeout=180, retry=True)
     try:
         if api_format == "responses":
@@ -413,6 +416,15 @@ def load_config(path: Path) -> dict:
         config.setdefault("ai_base_url", "https://api.deepseek.com")
         config.setdefault("ai_api_format", "chat_completions")
         config.setdefault("ai_model", config.get("deepseek_model", "deepseek-chat"))
+        config.setdefault("ai_headers", {})
+        config.setdefault("ai_max_output_tokens", 10000)
+        if (not isinstance(config["ai_headers"], dict)
+                or any(not isinstance(k, str) or not isinstance(v, str) or "\n" in k + v or "\r" in k + v
+                       for k, v in config["ai_headers"].items())):
+            raise ValueError()
+        if (config["ai_max_output_tokens"] is not None
+                and (not isinstance(config["ai_max_output_tokens"], int) or config["ai_max_output_tokens"] <= 0)):
+            raise ValueError()
         if (not isinstance(config["ai_base_url"], str) or not canonical_url(config["ai_base_url"])
                 or urlsplit(config["ai_base_url"]).query or urlsplit(config["ai_base_url"]).fragment):
             raise ValueError()

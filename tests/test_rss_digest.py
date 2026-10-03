@@ -130,6 +130,9 @@ class ProviderTests(unittest.TestCase):
         self.assertFalse(payload["store"])
         self.assertEqual(payload["input"][0]["content"][0]["type"], "input_text")
         self.assertNotIn("temperature", payload)
+        self.assertNotIn("max_output_tokens", payload)
+        self.assertEqual(api.call_args.kwargs["headers"]["originator"], "codex_cli_rs")
+        self.assertEqual(api.call_args.kwargs["headers"]["Authorization"], "Bearer test")
 
     def test_responses_incomplete_is_not_sent_as_valid_digest(self):
         now = datetime.now(TZ)
