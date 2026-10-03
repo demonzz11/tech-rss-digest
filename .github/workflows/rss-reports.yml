@@ -1,11 +1,7 @@
 name: 科技 RSS 日报 / 周报 / 月报
 
 on:
-  schedule:
-    # GitHub cron 使用 UTC；下列时间对应北京时间。
-    - cron: '0 0 * * *'       # 每天 08:00 日报
-    - cron: '0 1 * * 1'       # 周一 09:00 上周周报
-    - cron: '0 2 1 * *'       # 每月 1 日 10:00 上月月报
+  # 自动新闻报告合并到私有 personal-planner，避免重复手机通知。
   workflow_dispatch:
     inputs:
       report_type:

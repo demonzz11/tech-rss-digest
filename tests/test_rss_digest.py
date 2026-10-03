@@ -34,11 +34,11 @@ class PeriodTests(unittest.TestCase):
         self.assertEqual(start.year, 2025)
         self.assertEqual(key, "2025-12")
 
-    def test_daily_is_24_hours_even_when_scheduler_is_late(self):
+    def test_daily_covers_yesterday_and_today_up_to_collection(self):
         now = datetime(2026, 10, 3, 8, 37, tzinfo=TZ)
         start, end, key = app.report_period("daily", now)
-        self.assertEqual(end - start, timedelta(hours=24))
-        self.assertEqual(start.minute, 37)
+        self.assertEqual(start, datetime(2026, 10, 2, tzinfo=TZ))
+        self.assertEqual(end, now)
 
 
 class ArchiveTests(unittest.TestCase):
@@ -168,6 +168,27 @@ class ProviderTests(unittest.TestCase):
         self.assertGreater(len(chunks), 1)
         self.assertTrue(all(len(chunk.encode('utf-8')) <= 3800 for chunk in chunks))
         self.assertIn('[阅读原文](https://example.com/a)', '\n'.join(chunks))
+
+    def test_long_ntfy_report_is_one_short_message_with_mobile_link(self):
+        response = Mock(ok=True)
+        with patch.object(app.requests, 'post', return_value=response) as post:
+            app.push_ntfy('早报', '<p>' + '中文摘要' * 3000 + '</p>', 'topic_secret_123', 'https://ntfy.sh', 'https://github.com/a/b/blob/rss-data/report.md')
+        post.assert_called_once()
+        payload = post.call_args.kwargs['json']
+        self.assertLessEqual(len(payload['message'].encode()), 3000)
+        self.assertEqual(payload['click'], 'https://github.com/a/b/blob/rss-data/report.md')
+
+    def test_markdown_groups_yesterday_today_and_keeps_sources(self):
+        record = {'type': 'daily', 'period': '2026-10-03', 'start': '2026-10-02T00:00:00+08:00',
+                  'end': '2026-10-03T07:30:00+08:00', 'digest': {'overview': '概览'}, 'failed_sources': [],
+                  'highlights': [{**article('y'), 'published_at': '2026-10-02T19:00:00+08:00', 'summary': '昨日摘要', 'category': '国内'},
+                                 {**article('t'), 'published_at': '2026-10-03T06:00:00+08:00', 'summary': '今日摘要', 'category': '国际'}]}
+        body = app.markdown_report(record)
+        yesterday, today = body.split('## 今天（截至采集时）')
+        self.assertIn('昨日摘要', yesterday)
+        self.assertNotIn('今日摘要', yesterday)
+        self.assertIn('今日摘要', today)
+        self.assertIn('https://example.com/t', today)
 
     def test_ntfy_rejects_unsafe_topic_without_network_request(self):
         with patch.object(app.requests, "post") as post:
