@@ -1,4 +1,4 @@
-# 科技 RSS → AI 摘要 → 微信推送
+# 科技 RSS → AI 摘要 → 手机通知
 
 Python + GitHub Actions + AI API + ntfy。无需自己的服务器，无需数据库。
 当前配置使用本机 CC Switch 同一服务的 `gpt-6.1-sol` 模型，通过 Responses API 生成摘要；也支持 Chat Completions API 及 DeepSeek 官方服务。
@@ -43,6 +43,8 @@ README.md
 如果 Token 已公开或粘贴进聊天，建议在服务控制台更换，再配置新 Token。
 
 在手机安装 ntfy App，订阅 `NTFY_TOPIC` 对应的主题即可接收通知，并确保 AI 服务账户可以调用配置的模型。
+服务器地址使用 `https://ntfy.sh`。无需注册或实名认证；随机主题名不要公开，知道主题名的人可以读写该主题。
+日报以 Markdown 发送，保留原文链接；较长报告会分成多条通知。JSON/HTML 完整版本仍保留在数据分支与 Actions 报告附件中。
 
 ## 3. 首次运行
 

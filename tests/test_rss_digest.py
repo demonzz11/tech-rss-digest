@@ -157,9 +157,17 @@ class ProviderTests(unittest.TestCase):
         response = Mock(ok=True, status_code=200)
         with patch.object(app.requests, "post", return_value=response) as post:
             app.push_ntfy("科技日报", "<h2>摘要</h2>", "topic_secret_123", "https://ntfy.sh")
-        self.assertEqual(post.call_args.args[0], "https://ntfy.sh/topic_secret_123")
-        self.assertEqual(post.call_args.kwargs["json"]["format"], "html")
-        self.assertEqual(post.call_args.kwargs["json"]["message"], "<h2>摘要</h2>")
+        self.assertEqual(post.call_args.args[0], "https://ntfy.sh")
+        self.assertTrue(post.call_args.kwargs["json"]["markdown"])
+        self.assertEqual(post.call_args.kwargs["json"]["title"], "科技日报")
+        self.assertEqual(post.call_args.kwargs["json"]["message"], "## 摘要")
+
+    def test_ntfy_chunks_chinese_under_byte_limit_and_preserves_links(self):
+        html = '<h2>日报</h2><p>' + '中文摘要。' * 1000 + '</p><p><a href="https://example.com/a">阅读原文</a></p>'
+        chunks = app.notification_chunks(html)
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(chunk.encode('utf-8')) <= 3800 for chunk in chunks))
+        self.assertIn('[阅读原文](https://example.com/a)', '\n'.join(chunks))
 
     def test_ntfy_rejects_unsafe_topic_without_network_request(self):
         with patch.object(app.requests, "post") as post:

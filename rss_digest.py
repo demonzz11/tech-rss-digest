@@ -408,6 +408,55 @@ def push_report(title: str, content: str, token: str) -> None:
         raise DigestError(f"PushPlus 拒绝推送，状态码 {safe_code}（响应内容已隐藏）")
 
 
+class NotificationParser(HTMLParser):
+    """将我们生成的报告 HTML 转为 ntfy 可显示的 Markdown，保留原文链接。"""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.link = ""
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {"h2", "h3"}:
+            self.parts.append("\n\n" + ("## " if tag == "h2" else "### "))
+        elif tag in {"p", "hr"}:
+            self.parts.append("\n\n")
+        elif tag == "a":
+            self.link = dict(attrs).get("href", "")
+            self.parts.append("[")
+
+    def handle_endtag(self, tag):
+        if tag == "a":
+            self.parts.append("](" + self.link + ")")
+        elif tag in {"p", "h2", "h3"}:
+            self.parts.append("\n\n")
+
+    def handle_data(self, data):
+        self.parts.append(data)
+
+
+def notification_chunks(content: str, limit: int = 3800) -> list[str]:
+    parser = NotificationParser()
+    parser.feed(content)
+    message = re.sub(r"\n{3,}", "\n\n", "".join(parser.parts)).strip()
+    chunks, current = [], ""
+    for paragraph in message.split("\n\n"):
+        candidate = current + ("\n\n" if current else "") + paragraph
+        if len(candidate.encode("utf-8")) <= limit:
+            current = candidate
+            continue
+        if current:
+            chunks.append(current)
+            current = ""
+        for char in paragraph:
+            if len((current + char).encode("utf-8")) > limit:
+                chunks.append(current)
+                current = ""
+            current += char
+    if current:
+        chunks.append(current)
+    return chunks or ["本期没有新文章。"]
+
+
 def push_ntfy(title: str, content: str, topic: str, server: str) -> None:
     topic = topic.strip()
     if not re.fullmatch(r"[A-Za-z0-9_-]{8,80}", topic):
@@ -415,14 +464,17 @@ def push_ntfy(title: str, content: str, topic: str, server: str) -> None:
     base = server.rstrip("/")
     if not canonical_url(base):
         raise DigestError("ntfy_server 必须是 http 或 https 地址")
-    try:
-        response = requests.post(f"{base}/{topic}", json={"topic": topic, "title": title,
-                                 "message": content, "format": "html"}, timeout=30,
-                                 headers={"Content-Type": "application/json", "User-Agent": USER_AGENT})
-    except requests.RequestException:
-        raise DigestError("ntfy 网络请求失败（响应内容已隐藏）") from None
-    if not response.ok:
-        raise DigestError(f"ntfy 拒绝推送，状态码 {response.status_code}（响应内容已隐藏）")
+    chunks = notification_chunks(content)
+    for index, chunk in enumerate(chunks, 1):
+        part_title = title if len(chunks) == 1 else f"{title} ({index}/{len(chunks)})"
+        try:
+            response = requests.post(base, json={"topic": topic, "title": part_title,
+                                     "message": chunk, "markdown": True}, timeout=30,
+                                     headers={"Content-Type": "application/json", "User-Agent": USER_AGENT})
+        except requests.RequestException:
+            raise DigestError("ntfy 网络请求失败（响应内容已隐藏）") from None
+        if not response.ok:
+            raise DigestError(f"ntfy 拒绝推送，状态码 {response.status_code}（响应内容已隐藏）")
 
 
 def prune_archive(archive: Path, now: datetime, retention_days: int) -> None:
@@ -489,7 +541,7 @@ def run(args: argparse.Namespace) -> None:
     report_path = args.archive_dir / "reports" / args.type / f"{key}.json"
     if not args.dry_run and not args.force and report_path.exists():
         if read_json(report_path).get("sent_at"):
-            LOG.info("本期 %s 已被 PushPlus 接收，跳过；需要重发时使用 --force", key)
+            LOG.info("本期 %s 已被推送服务接收，跳过；需要重发时使用 --force", key)
             return
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     push_service = config["push_service"]
@@ -549,7 +601,7 @@ def run(args: argparse.Namespace) -> None:
         raise DigestError("config.json 的 push_service 只能是 ntfy 或 pushplus")
     record["sent_at"] = datetime.now(tz).isoformat()
     write_json(report_path, record)
-    LOG.info("PushPlus 已接收报告：%s", title)
+    LOG.info("%s 已接收报告：%s", push_service, title)
 
 
 def main() -> int:
