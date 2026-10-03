@@ -403,6 +403,8 @@ def push_report(title: str, content: str, token: str) -> None:
     if response.get("code") != 200:
         code = response.get("code")
         safe_code = str(code) if isinstance(code, int) else "未知"
+        if code == 905:
+            raise DigestError("PushPlus 拒绝推送：账户未进行实名认证")
         raise DigestError(f"PushPlus 拒绝推送，状态码 {safe_code}（响应内容已隐藏）")
 
 

@@ -146,6 +146,13 @@ class ProviderTests(unittest.TestCase):
                 app.push_report("title", "content", "secret-key")
         self.assertNotIn("secret-key", str(caught.exception))
 
+    def test_pushplus_unverified_account_has_actionable_error(self):
+        with patch.object(app, "api_json", return_value={"code": 905, "msg": "账户未进行实名认证"}):
+            with self.assertRaises(app.DigestError) as caught:
+                app.push_report("title", "content", "secret-key")
+        self.assertIn("实名认证", str(caught.exception))
+        self.assertNotIn("secret-key", str(caught.exception))
+
     def test_push_timeout_is_not_retried(self):
         with patch.object(app.requests, "post", side_effect=app.requests.Timeout("secret-key")) as post:
             with self.assertRaises(app.DigestError) as caught:
