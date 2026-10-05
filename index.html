@@ -1,2 +1,70 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>生活资讯</title><style>:root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#142b3f;background:#eef3f7;line-height:1.65}body{margin:0}main{max-width:820px;margin:auto;padding:24px 16px 48px}header{padding:12px 0 20px}h1{font-size:clamp(24px,5vw,34px);margin:8px 0}h2{font-size:21px}h3{font-size:17px}small,footer,.muted{color:#526577}nav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}.card{background:#fff;border:1px solid #dce5ed;border-radius:14px;padding:20px;margin:14px 0;overflow-wrap:anywhere}.button,button{display:inline-block;background:#1d5b82;color:white;padding:10px 16px;border:0;border-radius:9px;text-decoration:none;font-size:16px;cursor:pointer}.secondary{background:#dceaf4;color:#163e59}a{color:#15577d}li{margin:7px 0}input,select,textarea{width:100%;box-sizing:border-box;border:1px solid #a7b9c9;border-radius:8px;padding:10px;font:inherit;background:white}label{display:block;margin:12px 0 6px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}svg{width:100%;height:auto;display:block}footer{font-size:13px;padding:20px 0}.pill{display:inline-block;border-radius:15px;background:#e2eff9;padding:3px 10px;margin:3px}#result{white-space:pre-wrap}.error{color:#9f2433}
-</style></head><body><main><header><small>生活提醒 · 资讯</small><h1>生活资讯</h1><p>个人课程与反馈保存在私有仓库。</p></header><section class="card"><h2>今日关键词</h2><p></p><p></p></section><section class="card"><h2>新闻报告</h2><ul><li><a href="news/daily/2026-10-05.html">daily · 2026-10-05</a></li></ul></section><section class="card"><a href="https://personal-planner-gateway.personal-planner-gateway.workers.dev/feedback">登录个人反馈</a></section><footer>新闻依据RSS标题和摘录，不保证覆盖全网。发布时间可能与事件发生时间不同。</footer></main></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>生活资讯</title><style>/* 手机优先：统一资讯、计划与反馈页的视觉层级和触控尺寸。 */
+:root{font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#25352f;background:#f5f6f2;line-height:1.7;font-size:16px;--accent:#246b55;--muted:#64736c;--border:#e3e8e1}
+*{box-sizing:border-box}
+body{margin:0}
+main{width:100%;max-width:860px;margin:0 auto;padding:32px 24px 56px}
+header{padding:8px 0 22px}
+header>small{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;font-weight:650;letter-spacing:.04em}
+header>small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(26px,5.6vw,36px);line-height:1.3;letter-spacing:-.025em;margin:12px 0;font-weight:750}
+h2{font-size:19px;line-height:1.45;margin:0 0 14px;font-weight:700}
+h3{font-size:17px;line-height:1.55;margin:0 0 8px;font-weight:650}
+p{margin:10px 0}
+header p{color:var(--muted);margin:0}
+small,footer,.muted{color:var(--muted)}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
+.card{min-width:0;background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px;margin:16px 0;overflow-wrap:anywhere;box-shadow:0 3px 16px #21372b04}
+.card>p:last-child,.card>ul:last-child{margin-bottom:0}
+.card article{padding:20px 0;border-top:1px solid var(--border)}
+.card article:first-of-type{border-top:0;padding-top:4px}
+.card article:last-child{padding-bottom:0}
+.card article>p{color:#46564e;font-size:15px;margin:6px 0 12px}
+.card article>ul{list-style:none;padding:0;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.card article>ul li{margin:5px 0}
+.card article>ul a{text-decoration:none;font-weight:600}
+.keyword-card{background:#edf4ee;border-color:#dce8dd}
+.keyword-card>p:last-child{font-size:15px;color:#475d50}
+.button,button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;max-width:100%;background:var(--accent);color:white;padding:11px 18px;border:1px solid transparent;border-radius:12px;text-decoration:none;font:inherit;font-size:15px;font-weight:600;line-height:1.5;cursor:pointer;transition:background .15s,box-shadow .15s}
+.button:hover,button:hover{background:#1b5845}
+.secondary{background:#e9eee8;color:#315442;border-color:#e0e6dc}
+.secondary:hover{background:#dde7dc}
+button:disabled{opacity:.6;cursor:wait}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #83bba2;outline-offset:3px}
+ul{padding-left:22px}
+li{margin:9px 0}
+input,select,textarea{width:100%;min-height:46px;max-width:100%;box-sizing:border-box;border:1px solid #cbd6cc;border-radius:10px;padding:11px 12px;font:inherit;font-size:16px;line-height:1.5;background:#fff;color:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical}
+label{display:block;margin:16px 0 7px;font-size:14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.grid>div{min-width:0}
+svg{width:100%;height:auto;display:block;overflow:hidden}
+svg text{fill:#64736c;font-family:inherit}
+footer{font-size:12px;line-height:1.8;padding:22px 2px 0;overflow-wrap:anywhere}
+.pill{display:inline-block;border:1px solid #dce8db;border-radius:8px;background:#f8fbf6;color:#3d674d;font-size:13px;line-height:1.4;padding:5px 10px;margin:3px 5px 3px 0}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.section-heading h2{margin:0}
+.section-heading .muted{font-size:12px}
+.report-link{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--border);padding:17px 0;text-decoration:none;color:inherit;min-height:74px}
+.report-link:first-of-type{border-top:0}
+.report-link:last-child{padding-bottom:0}
+.report-link::after{content:"↗";font-size:22px;font-weight:400;color:var(--accent)}
+.report-link strong{display:block;font-size:17px;font-weight:650}
+.report-link small{font-size:13px}
+.featured-report strong{color:var(--accent)}
+.feedback-entry{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.feedback-entry h2{margin-bottom:4px}
+.feedback-entry p{font-size:14px;margin:0;color:var(--muted)}
+.task{padding:16px 0;border-bottom:1px solid var(--border)}
+.task label{margin:0 0 8px;font-size:15px}
+.form-intro{margin-bottom:24px}
+.form-note{display:block;margin-top:12px;font-size:12px}
+.submit-row{margin-top:24px}
+.submit-row button{width:100%}
+#result{white-space:pre-wrap;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+#result:not(:empty){padding:12px 14px;background:#edf4ee;border-radius:10px}
+.error{color:#9f2433}
+@media(max-width:600px){main{padding:22px 16px 40px}.card{padding:20px;border-radius:16px;margin:14px 0}header{padding-bottom:18px}h2{font-size:18px}nav .button{flex:1;min-width:130px}.feedback-entry{align-items:flex-start;flex-direction:column}.feedback-entry .button{width:100%}.section-heading{align-items:flex-start}.grid{gap:0 12px}}
+@media(max-width:360px){main{padding-left:12px;padding-right:12px}.card{padding:16px}.grid{grid-template-columns:1fr}nav{flex-direction:column}}
+</style></head><body><main><header><small>生活提醒 · 资讯</small><h1>生活资讯</h1><p>花几分钟，了解今天。</p></header><section class="card"><div class="section-heading"><h2>最新报告</h2><span class="muted">点击阅读完整内容</span></div><a class="report-link featured-report" href="news/daily/2026-10-05.html"><span><strong>热点早报</strong><small>2026-10-05</small></span></a></section><section class="card feedback-entry"><div><h2>今天怎么样？</h2><p>记录学习与训练，查看自己的进展。</p></div><a class="button secondary" href="https://personal-planner-gateway.personal-planner-gateway.workers.dev/feedback">登录个人反馈</a></section><footer>新闻依据RSS标题和摘录，不保证覆盖全网。发布时间可能与事件发生时间不同。</footer></main></body></html>
