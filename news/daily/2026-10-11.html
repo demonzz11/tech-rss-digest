@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>热点早报 · 2026-10-11</title><style>/* 手机优先：统一资讯、计划与反馈页的视觉层级和触控尺寸。 */
+:root{font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#25352f;background:#f5f6f2;line-height:1.7;font-size:16px;--accent:#246b55;--muted:#64736c;--border:#e3e8e1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+main{width:100%;max-width:860px;margin:0 auto;padding:32px 24px 56px}
+header{padding:8px 0 22px}
+header>small{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;font-weight:650;letter-spacing:.04em}
+header>small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(26px,5.6vw,36px);line-height:1.3;letter-spacing:-.025em;margin:12px 0;font-weight:750}
+h2{font-size:19px;line-height:1.45;margin:0 0 14px;font-weight:700}
+h3{font-size:17px;line-height:1.55;margin:0 0 8px;font-weight:650}
+p{margin:10px 0}
+header p{color:var(--muted);margin:0}
+small,footer,.muted{color:var(--muted)}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
+.card{min-width:0;background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px;margin:16px 0;overflow-wrap:anywhere;box-shadow:0 3px 16px #21372b04}
+.card>p:last-child,.card>ul:last-child{margin-bottom:0}
+.card article{padding:20px 0;border-top:1px solid var(--border)}
+.card article:first-of-type{border-top:0;padding-top:4px}
+.card article:last-child{padding-bottom:0}
+.card article>p{color:#46564e;font-size:15px;margin:6px 0 12px}
+.card article>ul{list-style:none;padding:0;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.card article>ul li{margin:5px 0}
+.card article>ul a{text-decoration:none;font-weight:600}
+.keyword-card{background:#edf4ee;border-color:#dce8dd}
+.keyword-card>p:last-child{font-size:15px;color:#475d50}
+.button,button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;max-width:100%;background:var(--accent);color:white;padding:11px 18px;border:1px solid transparent;border-radius:12px;text-decoration:none;font:inherit;font-size:15px;font-weight:600;line-height:1.5;cursor:pointer;transition:background .15s,box-shadow .15s}
+.button:hover,button:hover{background:#1b5845}
+.secondary{background:#e9eee8;color:#315442;border-color:#e0e6dc}
+.secondary:hover{background:#dde7dc}
+button:disabled{opacity:.6;cursor:wait}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #83bba2;outline-offset:3px}
+ul{padding-left:22px}
+li{margin:9px 0}
+input,select,textarea{width:100%;min-height:46px;max-width:100%;box-sizing:border-box;border:1px solid #cbd6cc;border-radius:10px;padding:11px 12px;font:inherit;font-size:16px;line-height:1.5;background:#fff;color:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical}
+label{display:block;margin:16px 0 7px;font-size:14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.grid>div{min-width:0}
+svg{width:100%;height:auto;display:block;overflow:hidden}
+svg text{fill:#64736c;font-family:inherit}
+footer{font-size:12px;line-height:1.8;padding:22px 2px 0;overflow-wrap:anywhere}
+.pill{display:inline-block;border:1px solid #dce8db;border-radius:8px;background:#f8fbf6;color:#3d674d;font-size:13px;line-height:1.4;padding:5px 10px;margin:3px 5px 3px 0}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.section-heading h2{margin:0}
+.section-heading .muted{font-size:12px}
+.report-link{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--border);padding:17px 0;text-decoration:none;color:inherit;min-height:74px}
+.report-link:first-of-type{border-top:0}
+.report-link:last-child{padding-bottom:0}
+.report-link::after{content:"↗";font-size:22px;font-weight:400;color:var(--accent)}
+.report-link strong{display:block;font-size:17px;font-weight:650}
+.report-link small{font-size:13px}
+.featured-report strong{color:var(--accent)}
+.feedback-entry{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.feedback-entry h2{margin-bottom:4px}
+.feedback-entry p{font-size:14px;margin:0;color:var(--muted)}
+.task{padding:16px 0;border-bottom:1px solid var(--border)}
+.task label{margin:0 0 8px;font-size:15px}
+.form-intro{margin-bottom:24px}
+.form-note{display:block;margin-top:12px;font-size:12px}
+.submit-row{margin-top:24px}
+.submit-row button{width:100%}
+#result{white-space:pre-wrap;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+#result:not(:empty){padding:12px 14px;background:#edf4ee;border-radius:10px}
+.error{color:#9f2433}
+@media(max-width:600px){main{padding:22px 16px 40px}.card{padding:20px;border-radius:16px;margin:14px 0}header{padding-bottom:18px}h2{font-size:18px}nav .button{flex:1;min-width:130px}.feedback-entry{align-items:flex-start;flex-direction:column}.feedback-entry .button{width:100%}.section-heading{align-items:flex-start}.grid{gap:0 12px}}
+@media(max-width:360px){main{padding-left:12px;padding-right:12px}.card{padding:16px}.grid{grid-template-columns:1fr}nav{flex-direction:column}}
+
+/* 私人规划中心：主导航始终有周计划、历史和目标入口。 */
+.portal-nav{position:sticky;top:0;z-index:10;display:flex;flex-direction:row;flex-wrap:nowrap;gap:3px;padding:8px 0;margin:0 0 22px;background:#f5f6f2ee;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.portal-nav a{flex:1;min-width:0;text-align:center;text-decoration:none;padding:11px 5px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap}
+.portal-nav a:hover{background:#e9eee8}.portal-nav a[aria-current="page"]{background:var(--accent);color:white}
+.portal-hero{background:#eaf2e9;border-color:#d8e7d7}.portal-hero p{color:#44604f}.eyebrow{text-transform:none;font-size:12px;color:var(--accent);font-weight:650;letter-spacing:.05em}
+.portal-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.portal-actions .button{min-height:44px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.stat{background:white;border:1px solid var(--border);border-radius:14px;padding:16px 12px;min-width:0}.stat strong{display:block;font-size:25px;line-height:1.4;color:#234735}.stat small{display:block;font-size:12px}.stat .stat-note{font-size:11px;margin-top:5px}
+.task-list{list-style:none;margin:0;padding:0}.task-item{padding:16px 0;border-top:1px solid var(--border)}.task-item:first-child{border-top:0;padding-top:4px}.task-item:last-child{padding-bottom:0}.task-item strong{display:block;font-size:16px}.task-details{margin-top:6px;color:#56675c;font-size:14px;line-height:1.75}.task-details p{margin:4px 0}.task-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.goal-output{margin:12px 0 8px;padding:10px 12px;border-left:3px solid #a8c4a8;background:#f4f8f0;border-radius:0 8px 8px 0}
+.tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:12px;line-height:1.6;background:#edf3eb;color:#466147}.tag.muted{background:#f1f2ee;color:#667267}.tag.done{background:#e2f2e8;color:#236446}.tag.skipped{background:#faf0e2;color:#89633b}.tag.partial{background:#eef1fa;color:#52618a}
+.advice-list{margin:0;padding-left:20px}.advice-list li{margin:12px 0}.advice-list li:first-child{margin-top:0}.advice-list li:last-child{margin-bottom:0}.goal-summary{padding:16px 0;border-top:1px solid var(--border)}.goal-summary:first-child{border-top:0;padding-top:0}.goal-summary strong{display:block}.goal-summary p{font-size:14px;color:var(--muted);margin:5px 0}.goal-summary .goal-progress{font-size:12px;color:var(--accent)}
+.loading,.empty-state{padding:28px 8px;text-align:center;color:var(--muted);font-size:14px}.message{font-size:14px;padding:13px 16px;background:#edf4ee;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}.message.error{background:#fff0ed;color:#8b3c32}.message:empty{display:none}
+.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0 20px}.toolbar .button,.toolbar button{padding:9px 13px;min-height:42px}.toolbar h2{margin:0;font-size:17px}.date-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:16px 0}.date-strip a{display:flex;flex-direction:column;align-items:center;padding:8px 3px;text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:11px;font-size:12px;color:var(--muted)}.date-strip a strong{font-size:16px;color:#3c5141}.date-strip a.today{border-color:var(--accent);background:#eaf2e9}.week-day{scroll-margin-top:80px}.week-day.today{border-color:#92b39a;box-shadow:0 0 0 1px #92b39a}.week-day.past{background:#fcfdfb}.day-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}.day-heading h2{margin:0}.day-heading small{font-size:12px}.week-day .course-notice{font-size:14px;color:var(--muted);margin:0 0 12px}.week-day h3{font-size:15px;margin-top:18px;color:var(--accent)}
+.filter-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.filter-tabs button{min-height:40px;padding:8px 14px;background:#e9eee8;color:#315442}.filter-tabs button[aria-pressed="true"]{background:var(--accent);color:#fff}.range-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.range-form label{margin-top:0}.range-form button{grid-column:1 / -1}.range-form input{min-width:0;font-size:14px;padding:10px 8px}.history-day summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;cursor:pointer;list-style:none}.history-day summary::-webkit-details-marker{display:none}.history-day summary::after{content:"展开 ↓";font-size:12px;color:var(--accent)}.history-day[open] summary::after{content:"收起 ↑"}.history-day summary strong{font-size:17px}.history-day summary small{display:block;font-size:12px}.history-day .history-body{padding-top:18px}.metric-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.metric-row span{font-size:12px;background:#f2f5ee;padding:6px 9px;border-radius:8px}.history-notes{white-space:pre-wrap;font-size:14px;color:var(--muted);margin:16px 0}.history-count{font-size:13px;color:var(--muted);margin:12px 0}
+.goal-editor{padding:22px;min-width:0;border:1px solid var(--border);border-radius:16px;background:#fff;margin:16px 0}.goal-editor label{font-size:13px}.goal-editor .grid{gap:0 14px}.goal-editor legend{font-size:16px;font-weight:650;max-width:100%;padding:0 5px}.goal-editor .goal-control{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px}.danger-link{background:transparent;border-color:#e8d9d4;color:#945345;padding:8px 12px;font-size:13px;min-height:38px}.danger-link:hover{background:#faeeea}.goal-save-bar{position:sticky;bottom:12px;z-index:9;border:1px solid #d5e3d6;background:#fafdf9f5;border-radius:16px;padding:13px 16px;box-shadow:0 5px 28px #244a3317;margin-top:20px;backdrop-filter:blur(10px)}.goal-save-bar p{margin:0 0 9px;font-size:12px;color:var(--muted)}.goal-save-bar button{width:100%}.goal-form-note{font-size:13px;color:var(--muted)}.section-links{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin-top:15px}.history-link{display:block;margin-top:16px;text-align:center;font-size:14px}.saving-hint{margin:14px 0 0;font-size:12px;color:var(--muted)}
+@media(max-width:600px){.portal-nav{gap:2px;margin-bottom:16px}.portal-nav a{font-size:13px;padding:11px 2px}.portal-actions .button{flex:1}.stat{padding:13px 10px}.stat strong{font-size:22px}.toolbar{align-items:center}.goal-editor{padding:16px}.date-strip{gap:4px}.date-strip a{font-size:11px}.date-strip a strong{font-size:15px}}
+@media(max-width:360px){.portal-nav{flex-direction:row}.portal-nav a{font-size:12px}.stat-grid{gap:6px}.stat{padding:12px 7px}.stat strong{font-size:20px}.stat small{font-size:11px}.goal-editor .grid{grid-template-columns:1fr}.date-strip{gap:3px}.date-strip a{border-radius:8px}}
+</style></head><body><main><header><small>生活提醒 · 资讯</small><h1>热点早报 · 2026-10-11</h1><p>2026-10-10T00:00:00+08:00 至 2026-10-11T07:00:00+08:00</p></header><section class="card keyword-card"><h2>本期速览</h2><p><span class="pill">人工智能</span> <span class="pill">食品安全</span> <span class="pill">国际冲突</span> <span class="pill">能源出口</span> <span class="pill">枪击事件</span> <span class="pill">体育公益</span></p><p>窗口内新闻涉及AI产业与安全、公益育人、国际冲突与治安、能源出口及食品安全等议题。</p></section><section class="card"><h2>AI</h2><article><h3>亚马逊云科技与姚基金推出体育科技育人计划</h3><p>亚马逊云科技宣布与姚基金推出“云上篮图”计划，捐赠100万美元现金及云和AI资源，支持高校培训、黑客松和基层学校试点，培养AI与体育复合型人才。</p><ul><li><a rel="noopener noreferrer" href="https://www.ithome.com/1/011/542.htm">IT之家</a> · 2026-10-11T06:53:49+08:00</li></ul></article><article><h3>英伟达据称洽谈收购或追加投资Reflection AI</h3><p>据报道，英伟达正与Reflection AI就收购或追加投资展开初步谈判，可能采用人才兼并、股权投资或算力合作等形式。交易仍可能破裂，具体条款尚未确定。</p><ul><li><a rel="noopener noreferrer" href="https://www.ithome.com/1/011/541.htm">IT之家</a> · 2026-10-11T06:46:30+08:00</li></ul></article><article><h3>微软CEO称应假定所有AI模型都已遭入侵</h3><p>微软CEO纳德拉在社交平台发文，讨论高度先进AI模型带来的风险，并主张重新审视对AI系统的信任架构，避免将其视为只能接受其建议和行动的黑箱。</p><ul><li><a rel="noopener noreferrer" href="https://www.theverge.com/ai-artificial-intelligence/1009337/satya-nadella-says-we-should-assume-all-ai-models-are-compromised">The Verge</a> · 2026-10-11T06:10:17+08:00</li></ul></article><article><h3>纳德拉称AI模型需要“紧急刹车”</h3><p>微软CEO纳德拉发文表示，当前应退一步评估AI的信任架构，并提出AI模型需要“紧急刹车”。简介未说明具体技术方案或政策安排。</p><ul><li><a rel="noopener noreferrer" href="https://techcrunch.com/2026/10/10/microsofts-satya-nadella-says-ai-models-need-an-emergency-brake/">TechCrunch</a> · 2026-10-11T05:47:51+08:00</li></ul></article></section><section class="card"><h2>国际</h2><article><h3>特朗普称美国可能加入沙特打击胡塞武装行动</h3><p>谈及沙特利雅得机场遭袭事件时，美国总统特朗普表示，美国可能加入沙特针对胡塞武装的打击行动，并称将对此进行认真考虑。</p><ul><li><a rel="noopener noreferrer" href="https://www.chinanews.com.cn/gj/2026/10-11/10710863.shtml">中国新闻网</a> · 2026-10-11T06:43:52+08:00</li></ul></article><article><h3>美国宾夕法尼亚州发生大规模枪击事件</h3><p>美国宾夕法尼亚州伊利市9日傍晚发生大规模枪击事件，据美国媒体报道，事件造成包括枪手在内至少9人身亡。</p><ul><li><a rel="noopener noreferrer" href="https://www.chinanews.com.cn/gj/2026/10-11/10710860.shtml">中国新闻网</a> · 2026-10-11T06:22:39+08:00</li></ul></article><article><h3>缅甸年轻男性担忧被绑走并卖给军方</h3><p>BBC报道，缅甸年轻男性担心在街头遭绑架并被卖给缅甸军方。简介称，军政府正与民族武装和民间抵抗力量进行消耗战。</p><ul><li><a rel="noopener noreferrer" href="https://www.bbc.co.uk/news/articles/c680zlny0gk4o?at_campaign=rss&amp;at_medium=RSS">BBC国际</a> · 2026-10-11T06:13:08+08:00</li></ul></article></section><section class="card"><h2>其他</h2><article><h3>垃圾分类面临处理能力与资源配置问题</h3><p>文章以“不够烧”与“堆不下”并存为切入点，关注垃圾处理能力和垃圾分类如何协调解决。现有简介未提供更多具体措施或结论。</p><ul><li><a rel="noopener noreferrer" href="https://www.chinanews.com.cn/sh/2026/10-11/10710862.shtml">中国新闻网</a> · 2026-10-11T06:40:30+08:00</li></ul></article><article><h3>食品安全法修订草案公开征求意见</h3><p>市场监管总局就食品安全法修订草案征求社会意见。这是该法自2009年施行、2015年较大幅度修订后的一次大规模系统性修订。</p><ul><li><a rel="noopener noreferrer" href="https://www.chinanews.com.cn/sh/2026/10-11/10710861.shtml">中国新闻网</a> · 2026-10-11T06:35:20+08:00</li></ul></article></section><section class="card"><h2>经济</h2><article><h3>俄罗斯部分解除柴油出口禁令</h3><p>俄罗斯政府宣布部分解除柴油出口禁令，决定于10日生效；在当前阶段，俄罗斯将向国际市场供应50万吨柴油。</p><ul><li><a rel="noopener noreferrer" href="https://www.chinanews.com.cn/gj/2026/10-11/10710859.shtml">中国新闻网</a> · 2026-10-11T06:21:45+08:00</li></ul></article></section><footer>新闻依据RSS标题和摘录，不保证覆盖全网。发布时间可能与事件发生时间不同。 未成功采集：阮一峰的网络日志</footer></main></body></html>
